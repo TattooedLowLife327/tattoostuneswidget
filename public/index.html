@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tattoo's Tunes Spotify Login</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #191414;
+        color: white;
+      }
+      h1,
+      p {
+        text-align: center;
+      }
+      button {
+        padding: 15px 30px;
+        background-color: #1db954; /* Spotify Green */
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #1ed760;
+      }
+      #access-token-display {
+        margin-top: 20px;
+        background-color: #282828;
+        padding: 15px;
+        border-radius: 8px;
+        word-break: break-all;
+        max-width: 80%;
+        text-align: left;
+        display: none; /* Hidden by default */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to Tattoo's Tunes!</h1>
+    <p>
+      Log in with Spotify to see who added songs to your collaborative
+      playlists.
+    </p>
+
+    <button id="spotify-login-button">Login with Spotify</button>
+
+    <div id="access-token-display">
+      <h2>Access Token (for testing):</h2>
+      <p id="token-value"></p>
+      <p>
+        This token is for demonstration. In a real app, you'd securely use it
+        from your server or store it.
+      </p>
+    </div>
+
+    <script>
+      // === IMPORTANT: REPLACE YOUR_CLIENT_ID BELOW ===
+      const SPOTIFY_CLIENT_ID = "c3ea29bafb8a41adabfb51053cb56438";
+
+      // === IMPORTANT: This REDIRECT_URI must match exactly what you put in Spotify Dashboard ===
+      // For local testing with `netlify dev`, use this:
+      const REDIRECT_URI = "http://127.0.0.1:8888/.netlify/functions/callback";
+
+      // The permissions your app needs to ask the user for
+      const SCOPES =
+        "playlist-read-private playlist-read-collaborative user-read-private user-read-email";
+
+      document
+        .getElementById("spotify-login-button")
+        .addEventListener("click", () => {
+          const authUrl =
+            `https://support.spotify.com/us/article/collaborative-playlists/0` + // Spotify Auth Endpoint
+            `?response_type=code` +
+            `&client_id=${SPOTIFY_CLIENT_ID}` +
+            `&scope=${encodeURIComponent(SCOPES)}` +
+            `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+
+          window.location.href = authUrl; // Redirect the user to Spotify
+        });
+
+      // This part handles the redirect back from the Netlify Function
+      // after the token exchange. The function will redirect to the root with #access_token
+      window.onload = () => {
+        const hash = window.location.hash.substring(1); // Get the fragment part of the URL
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+
+        if (accessToken) {
+          document.getElementById("token-value").textContent = accessToken;
+          document.getElementById("access-token-display").style.display =
+            "block";
+          // You would typically use this token here to fetch user/playlist data
+          // or send it to your server to store it.
+        }
+      };
+    </script>
+  </body>
+</html>
